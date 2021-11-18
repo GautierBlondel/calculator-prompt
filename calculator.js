@@ -3,24 +3,39 @@ import { createInterface } from "readline";
 const inputCheckRegex = new RegExp(/\d|\s|[-+*/.\(\)/]/);
 
 const userInputIntoTabsArray = (userInput) => {
-  return userInput.split("").filter((e) => e !== " ");
+  const numbersArr = userInput
+    .split(/[-\+\*\/\(\)]+/)
+    .filter((e) => e !== "")
+    .map((elem) =>
+      elem.includes(".") ? parseFloat(elem, 10) : parseInt(elem, 10)
+    );
+  console.log("userInput", userInput);
+
+  console.log("numbersArr", numbersArr);
+
+  const operatorsArr = userInput.split(/\d+/);
+  operatorsArr.pop();
+
+  return {
+    numbers: numbersArr,
+    operators: operatorsArr
+  };
 };
 
 const userInputChecking = (userInput) => {
-  const answerCheckingArray = userInputIntoTabsArray(userInput);
-  const inputChecking = answerCheckingArray.every((e) =>
-    inputCheckRegex.test(e)
-  );
+  const inputChecking = userInput
+    .split("")
+    .every((e) => inputCheckRegex.test(e));
   if (!inputChecking) {
     return false;
   } else return true;
 };
 
-const loopTroughOperatorsArray = (numbersArr, operatorsArr) => {
+const loopTroughOperatorsArray = (numbersArr, operatorsArr, result) => {
   for (let i = 0; i < operatorsArr.length; i++) {
     switch (operatorsArr[i]) {
       case "":
-        result = numbersArr[i];
+        result = result === 0 ? numbersArr[i] : result;
         break;
       case "+":
         result = result + numbersArr[i];
@@ -35,7 +50,7 @@ const loopTroughOperatorsArray = (numbersArr, operatorsArr) => {
         result = result / numbersArr[i];
         break;
       default:
-        console.log("default");
+        console.log("You must specify an operator");
     }
   }
   return result;
@@ -57,19 +72,12 @@ const calculator = (result) => {
         console.clear();
         console.log("A forbidden character has been found");
         rl.close();
+        calculator(result);
       } else {
-        const answer = userInputIntoTabsArray(userInput).join("");
-        console.log("answer", answer);
-        const numbersArr = answer
-          .split(/[-\+\*\/\.\(\)]+/)
-          .map((elem) => parseInt(elem));
-        const operatorsArr = answer.split(/\d+/);
-        operatorsArr.pop();
-        console.log("numbersArr", numbersArr);
-        console.log("operatorsArr", operatorsArr);
+        const numbers = userInputIntoTabsArray(userInput).numbers;
+        const operators = userInputIntoTabsArray(userInput).operators;
 
-        const resultTest = loopTroughOperatorsArray(numbersArr, operatorsArr);
-        console.log("Your result is: ", resultTest);
+        const resultTest = loopTroughOperatorsArray(numbers, operators, result);
         rl.close();
         calculator(resultTest);
       }
