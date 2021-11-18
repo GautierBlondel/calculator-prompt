@@ -6,12 +6,7 @@ const userInputIntoTabsArray = (userInput) => {
   const numbersArr = userInput
     .split(/[-\+\*\/\(\)]+/)
     .filter((e) => e !== "")
-    .map((elem) =>
-      elem.includes(".") ? parseFloat(elem, 10) : parseInt(elem, 10)
-    );
-  console.log("userInput", userInput);
-
-  console.log("numbersArr", numbersArr);
+    .map((elem) => parseFloat(elem, 10));
 
   const operatorsArr = userInput.split(/\d+/);
   operatorsArr.pop();
@@ -31,11 +26,23 @@ const userInputChecking = (userInput) => {
   } else return true;
 };
 
-const loopTroughOperatorsArray = (numbersArr, operatorsArr, result) => {
+const loopTroughOperatorsArray = (
+  numbersArr,
+  operatorsArr,
+  result,
+  hasTypo
+) => {
   for (let i = 0; i < operatorsArr.length; i++) {
     switch (operatorsArr[i]) {
       case "":
-        result = result === 0 ? numbersArr[i] : result;
+        if (result !== 0 && !hasTypo) {
+          console.log("you must specify an operator to modify your result");
+          result = result;
+        } else if (result === 0) {
+          result = numbersArr[i];
+        } else {
+          result = result + numbersArr[i];
+        }
         break;
       case "+":
         result = result + numbersArr[i];
@@ -50,7 +57,6 @@ const loopTroughOperatorsArray = (numbersArr, operatorsArr, result) => {
         result = result / numbersArr[i];
         break;
       default:
-        console.log("You must specify an operator");
     }
   }
   return result;
@@ -76,8 +82,15 @@ const calculator = (result) => {
       } else {
         const numbers = userInputIntoTabsArray(userInput).numbers;
         const operators = userInputIntoTabsArray(userInput).operators;
+        const typOperation = operators.some((e) => /[-\+\*\/\(\)]+/.test(e));
+        const resultTest = loopTroughOperatorsArray(
+          numbers,
+          operators,
+          result,
+          typOperation
+        );
+        console.log("typOperation", typOperation);
 
-        const resultTest = loopTroughOperatorsArray(numbers, operators, result);
         rl.close();
         calculator(resultTest);
       }
